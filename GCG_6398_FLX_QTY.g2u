@@ -1,0 +1,215 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.fmFlxQty..Create(BaseForm)
+Gui.fmFlxQty..Caption("Please enter sequence quanties")
+Gui.fmFlxQty..Size(762,117)
+Gui.fmFlxQty..MinX(0)
+Gui.fmFlxQty..MinY(0)
+Gui.fmFlxQty..Position(0,0)
+Gui.fmFlxQty..AlwaysOnTop(False)
+Gui.fmFlxQty..FontName("Tahoma")
+Gui.fmFlxQty..FontSize(16)
+Gui.fmFlxQty..ControlBox(True)
+Gui.fmFlxQty..MaxButton(True)
+Gui.fmFlxQty..MinButton(True)
+Gui.fmFlxQty..MousePointer(0)
+Gui.fmFlxQty..Moveable(True)
+Gui.fmFlxQty..Sizeable(True)
+Gui.fmFlxQty..ShowInTaskBar(True)
+Gui.fmFlxQty..TitleBar(True)
+Gui.fmFlxQty..Event(UnLoad,fmFlxQty_UnLoad)
+Gui.fmFlxQty.txtGood.Create(TextBox,"",True,100,32,0,111,33,True,0,"Tahoma",16,,1)
+Gui.fmFlxQty.txtScrap.Create(TextBox,"",True,100,32,0,220,33,True,0,"Tahoma",16,,1)
+Gui.fmFlxQty.chkLeave.Create(CheckBox)
+Gui.fmFlxQty.chkLeave.Enabled(True)
+Gui.fmFlxQty.chkLeave.Visible(True)
+Gui.fmFlxQty.chkLeave.Zorder(0)
+Gui.fmFlxQty.chkLeave.Size(37,20)
+Gui.fmFlxQty.chkLeave.Position(350,39)
+Gui.fmFlxQty.chkLeave.Caption("")
+Gui.fmFlxQty.chkLeave.FontName("Tahoma")
+Gui.fmFlxQty.chkLeave.FontSize(16)
+Gui.fmFlxQty.chkLeave.Alignment(2)
+Gui.fmFlxQty.chkClose.Create(CheckBox)
+Gui.fmFlxQty.chkClose.Enabled(True)
+Gui.fmFlxQty.chkClose.Visible(True)
+Gui.fmFlxQty.chkClose.Zorder(0)
+Gui.fmFlxQty.chkClose.Size(37,20)
+Gui.fmFlxQty.chkClose.Position(454,39)
+Gui.fmFlxQty.chkClose.Caption("")
+Gui.fmFlxQty.chkClose.FontName("Tahoma")
+Gui.fmFlxQty.chkClose.FontSize(16)
+Gui.fmFlxQty.chkClose.FontStyle(True,False,False,False,False)
+Gui.fmFlxQty.chkClose.Alignment(2)
+Gui.fmFlxQty.lblGood.Create(Label,"GOOD",True,64,25,0,111,7,True,0,"Tahoma",16,,0,0)
+Gui.fmFlxQty.lblGood.BorderStyle(0)
+Gui.fmFlxQty.lblGood.FontStyle(True,False,False,False,False)
+Gui.fmFlxQty.lblScrap.Create(Label,"SCRAP",True,70,25,0,220,7,True,0,"Tahoma",16,,0,0)
+Gui.fmFlxQty.lblScrap.BorderStyle(0)
+Gui.fmFlxQty.lblScrap.FontStyle(True,False,False,False,False)
+Gui.fmFlxQty.lblLeave.Create(Label,"LEAVE?",True,78,25,0,329,7,True,0,"Tahoma",16,,0,0)
+Gui.fmFlxQty.lblLeave.BorderStyle(0)
+Gui.fmFlxQty.lblLeave.FontStyle(True,False,False,False,False)
+Gui.fmFlxQty.lblClose.Create(Label,"CLOSE?",True,80,25,0,432,7,True,0,"Tahoma",16,,0,0)
+Gui.fmFlxQty.lblClose.BorderStyle(0)
+Gui.fmFlxQty.lblClose.FontStyle(True,False,False,False,False)
+Gui.fmFlxQty.cmdSubmit.Create(Button)
+Gui.fmFlxQty.cmdSubmit.Enabled(True)
+Gui.fmFlxQty.cmdSubmit.Visible(True)
+Gui.fmFlxQty.cmdSubmit.Zorder(0)
+Gui.fmFlxQty.cmdSubmit.Size(141,30)
+Gui.fmFlxQty.cmdSubmit.Position(539,34)
+Gui.fmFlxQty.cmdSubmit.Caption("SUBMIT")
+Gui.fmFlxQty.cmdSubmit.FontName("Tahoma")
+Gui.fmFlxQty.cmdSubmit.FontSize(16)
+Gui.fmFlxQty.cmdSubmit.FontStyle(True,False,False,False,False)
+Gui.fmFlxQty.cmdSubmit.Event(Click,cmdSubmit_Click)
+Gui.fmFlxQty.txtJob.Create(TextBox,"",False,68,20,0,9,4,True,0,"Tahoma",8.25,,1)
+Gui.fmFlxQty.txtSuff.Create(TextBox,"",False,68,20,0,9,27,True,0,"Tahoma",8.25,,1)
+Gui.fmFlxQty.txtSeq.Create(TextBox,"",False,68,20,0,9,50,True,0,"Tahoma",8.25,,1)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+'TJS, June 2021
+'Customer: Sweed Machinery
+'Quote: 12506
+'BUSINESS CASE: The customer uses a lot of flex schedules on their laser cutting operation.  These flex schedules can be quite large having as many as 100 work orders per run.  The issue that they're experiencing is that move tickets can't be printed until the whole flex schedule is done, or if they try to record partial completions from the SFDC.NET, it takes too long to find all of the work orders that need to be updated.  This process requires a streamlined method of recording partial quantities for a flex schedule so the users can move on quickly and get the labels they need in a timely fashion.
+
+V.Local.sScanned.Declare
+V.Local.sJob.Declare
+V.Local.sSuffix.Declare
+V.Local.sSeq.Declare
+V.Local.sCaption.Declare
+V.Local.sSQL.Declare
+
+F.Intrinsic.Control.If(V.Caller.Hook,=,49752)
+	V.Local.sScanned.Set(V.Passed.ScanData)
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Replace(V.Local.sScanned,"%/","",V.Local.sScanned)
+F.Intrinsic.String.Split(V.Local.sScanned,"-",V.Local.sScanned)
+
+V.Local.sJob.Set(V.Local.sScanned(0))
+V.Local.sSuffix.Set(V.Local.sScanned(1))
+V.Local.sSeq.Set(V.Local.sScanned(2))
+
+F.ODBC.Connection!conts.OpenCompanyConnection
+F.Intrinsic.String.Build("Select JOB+SUFFIX+SEQ as JSS,FLAG_CLOSED from V_JOB_OPERATIONS where JOB = '{0}' and SUFFIX = '{1}' and SEQ = '{2}'",V.Local.sJob,V.Local.sSuffix,V.Local.sSeq,V.Local.sSQL)
+F.ODBC.Connection!conts.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+F.ODBC.Connection!conts.Close
+
+F.Intrinsic.Control.If(V.Local.sSQL.Trim,=,"")
+	F.Intrinsic.UI.Msgbox("Work Order does not exist","Error")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Split(V.Local.sSQL,"*!*",V.Local.sSQL)
+	F.Intrinsic.Control.If(V.Local.sSQL(1).Trim,=,"Y")
+		F.Intrinsic.UI.Msgbox("Sequence is closed","Error")
+		F.Intrinsic.Control.End
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+Gui.fmFlxQty.txtJob.Text(V.Local.sJob)
+Gui.fmFlxQty.txtSuff.Text(V.Local.sSuffix)
+Gui.fmFlxQty.txtSeq.Text(V.Local.sSeq)
+
+F.Intrinsic.String.Build("Please enter quantities for {0}-{1}-{2}",V.Local.sJob,V.Local.sSuffix,V.Local.sSeq,V.Local.sCaption)
+
+Gui.fmFlxQty..Caption(V.Local.sCaption)
+
+Gui.fmFlxQty..Show
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.cmdSubmit_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sFlxSchd.Declare
+V.Local.sJob.Declare
+V.Local.sSuffix.Declare
+V.Local.sJS.Declare
+V.Local.sSeq.Declare
+V.Local.sGood.Declare
+V.Local.sScrap.Declare
+V.Local.sLeave.Declare
+V.Local.sClose.Declare
+V.Local.sExGood.Declare
+V.Local.sExScrap.Declare
+V.Local.sSQL.Declare
+
+V.Local.sJob.Set(V.Screen.fmFlxQty!txtJob.Text)
+V.Local.sSuffix.Set(V.Screen.fmFlxQty!txtSuff.Text)
+V.Local.sSeq.Set(V.Screen.fmFlxQty!txtSeq.Text)
+
+F.Intrinsic.String.Build("{0}-{1}",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sJS)
+
+V.Local.sGood.Set(V.Screen.fmFlxQty!txtGood.Text)
+V.Local.sScrap.Set(V.Screen.fmFlxQty!txtScrap.Text)
+F.Intrinsic.Control.If(V.Screen.fmFlxQty!chkLeave.Value,=,1)
+	V.Local.sLeave.Set("Y")
+F.Intrinsic.Control.Else
+	V.Local.sLeave.Set("N")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Screen.fmFlxQty!chkClose.Value,=,1)
+	V.Local.sClose.Set("Y")
+F.Intrinsic.Control.Else
+	V.Local.sClose.Set("N")
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!conts.OpenCompanyConnection
+F.Intrinsic.String.Build("Select distinct SCHEDULE from JOB_CT_FLX_SCHD where JOB = '{0}' and SUFFIX = '{1}' and LABOR_SEQ = '{2}'",V.Local.sJob,V.Local.sSuffix,V.Local.sSeq,V.Local.sSQL)
+F.ODBC.Connection!conts.ExecuteAndReturn(V.Local.sSQL,V.Local.sFlxSchd)
+
+F.Intrinsic.String.Build("Select * from GCG_6398_FLX_QTY where FLEX_SCHD = '{0}' and JOB_SUFF = '{1}' and SEQ = '{2}'",V.Local.sFlxSchd,V.Local.sJS,V.Local.sSeq,V.Local.sSQL)
+F.ODBC.Connection!conts.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+
+F.Intrinsic.Control.If(V.Local.sSQL.Trim,=,"")
+	F.Intrinsic.String.Build("Insert into GCG_6398_FLX_QTY (FLEX_SCHD,JOB_SUFF,SEQ,QTY_GOOD,QTY_SCRAP,FLAG_LEAVE,FLAG_CLOSE) values ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')",V.Local.sFlxSchd,V.Local.sJS,V.Local.sSeq,V.local.sGood,V.Local.sScrap,V.Local.sLeave,V.Local.sClose,V.Local.sSQL)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Split(V.Local.sSQL,"*!*",V.Local.sSQL)
+	V.Local.sExGood.Set(V.Local.sSQL(4))
+	V.Local.sExScrap.Set(V.Local.sSQL(5))
+	F.Intrinsic.Math.Add(V.Local.sExGood,V.Local.sGood,V.Local.sGood)
+	F.Intrinsic.Math.Add(V.Local.sExScrap,V.Local.sScrap,V.Local.sScrap)
+	
+	F.Intrinsic.String.Build("Update GCG_6398_FLX_QTY set QTY_GOOD = '{0}',QTY_SCRAP = '{1}',FLAG_CLOSE = '{2}',FLAG_LEAVE = '{3}' where FLEX_SCHD = '{4}' and JOB_SUFF = '{5}' and SEQ = '{6}'",V.Local.sGood,V.local.sScrap,V.Local.sClose,V.Local.sLeave,V.Local.sFlxSchd,V.Local.sJS,V.Local.sSeq,V.Local.sSQL)
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!conts.Execute(V.Local.sSQL)
+
+F.ODBC.Connection!conts.Close
+
+F.Intrinsic.Control.CallSub(fmFlxQty_UnLoad)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdSubmit_Click.End
+
+Program.Sub.fmFlxQty_UnLoad.Start
+F.Intrinsic.Control.End
+Program.Sub.fmFlxQty_UnLoad.End
+
+Program.Sub.Error.Start
+V.Local.sError.Declare
+V.Local.iRet.Declare
+V.Local.sSep.Declare
+
+F.Intrinsic.String.Build("-------------------------------------------------------------------------------------",,V.Local.sSep)
+F.Intrinsic.String.Build("({5}-{6}){0}{7}{0}Project: {4}{0}{7}{0}Sub: {1}{0}Error: {2}, {3}", V.Ambient.NewLine, V.Args.SubRoutine, V.Args.eNumber, V.Args.eDescription,V.Caller.ScriptFile,V.Ambient.Date, V.Ambient.Time,V.Local.sSep,V.Local.sError)
+F.Intrinsic.UI.Msgbox(V.Local.sError,"Error",V.Local.iRet)
+Program.Sub.Error.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$tsmith$}$20210708102618446$}$xqPbj9atw05FglvzeFsZ9cqXP+qvG6tXEeuTDdga0flZ0HfCFn6CkLJ44YC4A9jZJLYTRiLDn7Q=
+Program.Sub.Comments.End

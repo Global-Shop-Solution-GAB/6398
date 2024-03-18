@@ -1,0 +1,75 @@
+﻿Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+'TJS, June 2021
+'Customer: Sweed Machinery
+'Quote: 12506
+'BUSINESS CASE: The customer uses a lot of flex schedules on their laser cutting operation.  These flex schedules can be quite large having as many as 100 work orders per run.  The issue that they're experiencing is that move tickets can't be printed until the whole flex schedule is done, or if they try to record partial completions from the SFDC.NET, it takes too long to find all of the work orders that need to be updated.  This process requires a streamlined method of recording partial quantities for a flex schedule so the users can move on quickly and get the labels they need in a timely fashion.
+V.Local.sTitle.Declare
+V.Local.sData.Declare
+V.Local.sDataType.Declare
+V.Local.iBDFRowCnt.Declare
+V.Local.iCnt.Declare
+V.Local.sFullData.Declare
+V.Local.sFlxSchd.Declare
+V.Local.sSQL.Declare
+V.Local.sWriteLine.Declare
+V.Local.sBDFPassedName.Declare
+
+F.Intrinsic.Control.If(V.Caller.Hook,=,50620)
+	V.Local.sBDFPassedName.Set("UpdateJobsView-gvWOOperations-bdf")
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.BDF.Load("BDF",V.Local.sBDFPassedName)
+F.Intrinsic.BDF.ReadRowCount("BDF",V.Local.iBDFRowCnt)
+F.Intrinsic.Math.Sub(V.Local.iBDFRowCnt,1,V.Local.iBDFRowCnt)
+F.Intrinsic.BDF.ReadColumnTitle("BDF",V.Local.sTitle)
+
+F.Intrinsic.Control.For(V.Local.iCnt,0,V.Local.iBDFRowCnt,1)
+	F.Intrinsic.BDF.ReadRow("BDF",V.Local.iCnt,V.Local.sData)
+	F.Intrinsic.String.Replace(V.Local.sData,"|~|","*!*",V.Local.sData)
+	F.Intrinsic.Control.If(V.Local.sFullData.Trim,=,"")
+		F.Intrinsic.String.Build("{0}",V.Local.sData,V.Local.sFullData)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("{0}{1}{2}",V.Local.sFullData,V.Ambient.NewLine,V.Local.sData,V.Local.sFullData)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.iCnt)
+
+F.Intrinsic.BDF.ReadColumnDataType("BDF",V.Local.sDataType)
+
+F.Data.DataTable.CreateFromString("dtFLXBDF",V.Local.sFullData,V.Local.sTitle,V.Local.sDataType,"*!*",V.Ambient.NewLine)
+
+F.ODBC.Connection!conts.OpenCompanyConnection
+	F.Intrinsic.String.Build("Select distinct SCHEDULE from JOB_CT_FLX_SCHD where RTRIM(JOB)+'-'+RTRIM(SUFFIX) = '{0}' and LABOR_SEQ = '{1}'",V.DataTable.dtFLXBDF(0).JobString!FieldValTrim,V.DataTable.dtFLXBDF(0).Sequence!FieldValTrim,V.Local.sSQL)
+	F.ODBC.Connection!conts.ExecuteAndReturn(V.Local.sSQL,V.Local.sFlxSchd)
+	
+	F.Intrinsic.String.Build("Delete GCG_6398_FLX_QTY where FLEX_SCHD = '{0}'",V.Local.sFlxSchd,V.Local.sSQL)
+	F.ODBC.Connection!conts.Execute(V.Local.sSQL)
+F.ODBC.Connection!conts.Close
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Error.Start
+V.Local.sError.Declare
+V.Local.iRet.Declare
+V.Local.sSep.Declare
+
+F.Intrinsic.String.Build("-------------------------------------------------------------------------------------",,V.Local.sSep)
+F.Intrinsic.String.Build("({5}-{6}){0}{7}{0}Project: {4}{0}{7}{0}Sub: {1}{0}Error: {2}, {3}", V.Ambient.NewLine, V.Args.SubRoutine, V.Args.eNumber, V.Args.eDescription,V.Caller.ScriptFile,V.Ambient.Date, V.Ambient.Time,V.Local.sSep,V.Local.sError)
+F.Intrinsic.UI.Msgbox(V.Local.sError,"Error",V.Local.iRet)
+Program.Sub.Error.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$tsmith$}$20210629160254390$}$xqPbj9atw05FglvzeFsZ9cqXP+qvG6tXA2HM5TVq2+RQ0zcxeEAwwVqHQzy+WEApUgvyx8V5NJI=
+Program.Sub.Comments.End
